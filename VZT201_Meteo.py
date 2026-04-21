@@ -42,13 +42,20 @@ import os            # Knihovna pro práci s operačním systémem (kontrola exi
 from email.mime.text import MIMEText     # Pomůcka pro správné sestavení těla e-mailu
 from datetime import datetime            # Knihovna pro zjištění aktuálního data a času
 
-# --- NOVÉ: Načítání skrytých údajů ---
-try:
-    from dotenv import load_dotenv       # Importujeme funkci pro načtení .env souboru
-    load_dotenv()                        # Tato funkce vyhledá soubor .env a "vytáhne" z něj data
-except ImportError:
-    # Pokud by knihovna nebyla nainstalovaná, program bude hledat v systému
-    pass
+# --- 1. AUTOMATICKÉ NAČTENÍ .ENV (OPRAVENO) ---
+
+# Tento kousek kódu zjistí, kde přesně na disku leží tento soubor (VZT201_Meteo.py)
+# a řekne knihovně dotenv, aby hledala .env ve stejné složce.
+adresar_skriptu = os.path.dirname(os.path.abspath(__file__))
+cesta_k_env = os.path.join(adresar_skriptu, '.env')
+
+if os.path.exists(cesta_k_env):
+    load_dotenv(cesta_k_env)
+    # Pro tvou kontrolu (později můžeš tyto dva řádky smazat):
+    print(f"✅ Soubor .env nalezen v: {adresar_skriptu}")
+    print(f"📧 Načtený uživatel: {os.getenv('EMAIL_USER')}")
+else:
+    print(f"❌ CHYBA: Soubor .env nebyl nalezen v {adresar_skriptu}!")
 
 # --- 1. KONFIGURACE ---
 # Proměnné jsou na začátku, aby se daly snadno změnit na jednom místě.
