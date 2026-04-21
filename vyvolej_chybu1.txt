@@ -1,0 +1,24 @@
+Ta „cesta středem“ je v programování nesmírně elegantní, protože nevyžaduje žádné složité interaktivní vstupy, a přesto vám dává nad běžícím skriptem absolutní moc.
+
+Tady máte bleskový návod, jak ty dva řádky do kódu zapracovat, aby to hned fungovalo:
+
+Na úplný začátek skriptu (mezi ostatní importy) přidejte:
+
+Python
+import os
+Uvnitř funkce moje_predpoved(), těsně před řádek s requests.get, vložte tuto logiku:
+
+Python
+# Pokud ve složce existuje soubor 'vyvolej_chybu.txt', nastavíme timeout na chybu
+testovaci_timeout = 0.001 if os.path.exists("stop.txt") else 15
+
+# Původní řádek upravte takto:
+response = requests.get(URL, timeout=testovaci_timeout)
+Jak teď provést ten "velký test":
+Krok A (Vyvolání chyby): Skript běží. Vy ve složce vytvoříte prázdný textový soubor a pojmenujete ho vyvolej_chybu.txt. Jakmile skript dojde k řádku s měřením, uvidí soubor, "přiškrtí" čas na minimum a odešle vám e-mail o chybě.
+
+Krok B (Ověření nápravy): Teď soubor stop.txt prostě smažte (nebo přejmenujte). Skript při dalším pokusu (po těch 10 minutách nebo kolik jste si nastavil) soubor nenajde, použije standardních 15 sekund, data stáhne a odešle vám e-mail "OPRAVENO".
+
+Je to čisté, průkazné a přesně to nasimuluje reálný výpadek i návrat do normálu bez jediného restartu programu.
+
+Až to vyzkoušíte, dejte vědět, jestli ten "OPRAVENO" mail dorazil – je to vždycky skvělý pocit, když ta automatika poprvé klapne!
