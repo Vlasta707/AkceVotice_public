@@ -41,6 +41,7 @@ import smtplib       # Protokol, který umožňuje Pythonu připojit se k e-mail
 import os            # Knihovna pro práci s operačním systémem (kontrola existence souborů)
 from email.mime.text import MIMEText     # Pomůcka pro správné sestavení těla e-mailu
 from datetime import datetime            # Knihovna pro zjištění aktuálního data a času
+from dotenv import load_dotenv           # Import knihovny pro .env
 
 # --- 1. AUTOMATICKÉ NAČTENÍ .ENV (OPRAVENO) ---
 
