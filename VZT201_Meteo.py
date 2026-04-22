@@ -32,7 +32,7 @@ from email.mime.text import MIMEText     # Pomáhá správně formátovat text e
 from datetime import datetime            # Pro práci s datem a časem (např. získání aktuálního času)
 from dotenv import load_dotenv           # Pro načítání proměnných prostředí ze souboru .env
 
-# --- NAČTENÍ KONFIGURACE Z .ENV SOUBORU ---
+# --- 1. NAČTENÍ KONFIGURACE Z .ENV SOUBORU ---
 # Tento blok kódu zajistí, že citlivé údaje (jako hesla k e-mailu) nebudou přímo v kódu,
 # ale v samostatném souboru .env. To je dobrá bezpečnostní praxe.
 
