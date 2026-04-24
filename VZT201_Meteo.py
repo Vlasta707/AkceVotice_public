@@ -60,7 +60,7 @@ LON = "14.42"  # Zeměpisná délka (Praha)
 URL = f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}&hourly=temperature_2m,shortwave_radiation&forecast_days=2"
 
 CSV_FILE = 'historie_pocasi.csv'     # Název logovacího souboru, kam se data neustále přidávají
-BUFFER_FILE = 'buffer_pocasi.csv'    # Název souboru, který se vždy přepíše (obsahuje jen 25 údajů)
+BUFFER_FILE = 'buffer_pocasi.csv'    # Název souboru, který se vždy přepíše (obsahuje 49 údajů)
 
 # Přihlašovací údaje pro e-mailový server Seznam.cz
 # MODIFIKACE: Místo textu s heslem používáme os.getenv, který si heslo "vypůjčí" ze souboru .env
@@ -142,11 +142,11 @@ def moje_predpoved():
                 # Pokud by se čas neshodoval, jako zálohu vezmeme aktuální hodinu v dni
                 aktualni_hodina_index = datetime.now().hour
 
-            # Získání 12 záznamů (hodin) od aktuálního času pomocí "slicingu" seznamů.
+            # Získání 24 záznamů (hodin) od aktuálního času pomocí "slicingu" seznamů.
             # Slicing je způsob, jak vybrat část seznamu: [začátek : konec].
-            vyber_casu = hodiny[aktualni_hodina_index : aktualni_hodina_index + 12]
-            vyber_teplot = teploty[aktualni_hodina_index : aktualni_hodina_index + 12]
-            vyber_zareni = zareni[aktualni_hodina_index : aktualni_hodina_index + 12]
+            vyber_casu = hodiny[aktualni_hodina_index : aktualni_hodina_index + 24]
+            vyber_teplot = teploty[aktualni_hodina_index : aktualni_hodina_index + 24]
+            vyber_zareni = zareni[aktualni_hodina_index : aktualni_hodina_index + 24]
             
             # Příprava dat pro CSV soubor:
             # Z časových řetězců (např. "2026-04-14T14:00") extrahujeme pouze hodiny (např. "14:00").
@@ -167,7 +167,7 @@ def moje_predpoved():
                 writer.writerow([]) # Prázdný řádek pro oddělení dalších hodin
             
             # --- 3b. ZÁPIS DO BUFFERU (Mód 'w' = write, smazat a zapsat znovu) ---
-            # Vytvoříme jeden dlouhý seznam o 25 prvcích (Čas + 12x Teplota + 12x Oblačnost)
+            # Vytvoříme jeden dlouhý seznam o 49 prvcích (Čas + 24x Teplota + 24x Sluneční záření)
             buffer_data = [datetime.now().strftime("%H:%M:%S")] + vyber_teplot + vyber_zareni 
 
             # Otevření souboru v režimu 'w' (write) znamená, že se obsah souboru vždy přepíše.
