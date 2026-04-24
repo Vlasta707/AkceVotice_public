@@ -1,5 +1,5 @@
 """
-Skript pro pravidelné stahování předpovědi počasí (teplota, oblačnost) z API Open-Meteo.
+Skript pro pravidelné stahování předpovědi počasí (teplota, intenzita slunečního záření) z API Open-Meteo.
 Výstupy se ukládají do historie (CSV) a do bufferu s aktuálním přehledem pro další zpracování.
 
 Logika ošetření chyb a automatického obnovení:
@@ -57,7 +57,7 @@ LAT = "50.08"  # Zeměpisná šířka (Praha)
 LON = "14.42"  # Zeměpisná délka (Praha)
 
 # URL adresa: složený řetězec, který říká webu Open-Meteo, co přesně chceme a nastavení pro 2 dny (aby to vidělo přes půlnoc)
-URL = f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}&hourly=temperature_2m,cloud_cover&forecast_days=2"
+URL = f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}&hourly=temperature_2m,shortwave_radiation&forecast_days=2"
 
 CSV_FILE = 'historie_pocasi.csv'     # Název logovacího souboru, kam se data neustále přidávají
 BUFFER_FILE = 'buffer_pocasi.csv'    # Název souboru, který se vždy přepíše (obsahuje jen 25 údajů)
@@ -130,7 +130,7 @@ def moje_predpoved():
             # 2. ZPRACOVÁNÍ: Vytáhneme si ze stažených dat jen ty seznamy, které nás zajímají
             hodiny = data['hourly']['time']
             teploty = data['hourly']['temperature_2m']
-            mraky = data['hourly']['cloud_cover']
+            zareni = data['hourly']['shortwave_radiation']
             
             # Zjistíme aktuální čas a převedeme ho do formátu ISO 8601 (např. "2026-04-14T10:00").
             ted_iso = datetime.now().strftime("%Y-%m-%dT%H:00")
@@ -146,13 +146,13 @@ def moje_predpoved():
             # Slicing je způsob, jak vybrat část seznamu: [začátek : konec].
             vyber_casu = hodiny[aktualni_hodina_index : aktualni_hodina_index + 12]
             vyber_teplot = teploty[aktualni_hodina_index : aktualni_hodina_index + 12]
-            vyber_mraku = mraky[aktualni_hodina_index : aktualni_hodina_index + 12]
+            vyber_zareni = zareni[aktualni_hodina_index : aktualni_hodina_index + 12]
             
             # Příprava dat pro CSV soubor:
             # Z časových řetězců (např. "2026-04-14T14:00") extrahujeme pouze hodiny (např. "14:00").
             headers = [t.split('T')[1] for t in vyber_casu] 
             row_temp_hist = [f"{t} °C" for t in vyber_teplot]   # Přidáme jednotky k teplotám
-            row_clouds_hist = [f"{c} %" for c in vyber_mraku]   # Přidáme jednotky k oblačnosti
+            row_radiation_hist = [f"{r} W/m²" for r in vyber_zareni]   # Přidáme jednotky k intenzitě záření
 
             # --- 3a. ZÁPIS DO LOGOVACÍHO SOUBORU (Mód 'a' = append, přidat na konec) ---
             # Otevření souboru v režimu 'a' (append) znamená, že se nová data přidají na konec souboru.
@@ -163,12 +163,12 @@ def moje_predpoved():
                 writer.writerow([f"--- Předpověď vytvořena: {now_str} ---"]) # Zápis hlavičky s časem vytvoření
                 writer.writerow(["Parametr"] + headers)
                 writer.writerow(["Teplota"] + row_temp_hist)
-                writer.writerow(["Oblačnost"] + row_clouds_hist)
+                writer.writerow(["Sluneční záření"] + row_radiation_hist)
                 writer.writerow([]) # Prázdný řádek pro oddělení dalších hodin
             
             # --- 3b. ZÁPIS DO BUFFERU (Mód 'w' = write, smazat a zapsat znovu) ---
             # Vytvoříme jeden dlouhý seznam o 25 prvcích (Čas + 12x Teplota + 12x Oblačnost)
-            buffer_data = [datetime.now().strftime("%H:%M:%S")] + vyber_teplot + vyber_mraku 
+            buffer_data = [datetime.now().strftime("%H:%M:%S")] + vyber_teplot + vyber_zareni 
 
             # Otevření souboru v režimu 'w' (write) znamená, že se obsah souboru vždy přepíše.
             with open(BUFFER_FILE, 'w', newline='', encoding='utf-8-sig') as f_buf:
