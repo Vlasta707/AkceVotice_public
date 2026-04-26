@@ -168,7 +168,7 @@ def moje_predpoved():
             
             # --- 3b. ZÁPIS DO BUFFERU (Mód 'w' = write, smazat a zapsat znovu) ---
             # Vytvoříme jeden dlouhý seznam o 49 prvcích (Čas + 24x Teplota + 24x Sluneční záření)
-            buffer_data = [datetime.now().strftime("%H:%M:%S")] + vyber_teplot + vyber_zareni 
+            buffer_data = [datetime.now().strftime("%d.%m.%Y %H:%M:%S")] + vyber_teplot + vyber_zareni 
 
             # Otevření souboru v režimu 'w' (write) znamená, že se obsah souboru vždy přepíše.
             with open(BUFFER_FILE, 'w', newline='', encoding='utf-8-sig') as f_buf:
