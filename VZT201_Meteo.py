@@ -28,9 +28,17 @@ import schedule      # Pro plánování úloh v pravidelných intervalech (např
 import time          # Pro práci s časem, například pro pozastavení programu (sleep)
 import smtplib       # Pro odesílání e-mailů přes SMTP server
 import os            # Pro interakci s operačním systémem (např. kontrola souborů, proměnné prostředí)
+import logging       # Pro profesionální logování událostí
 from email.mime.text import MIMEText     # Pomáhá správně formátovat text e-mailu
 from datetime import datetime            # Pro práci s datem a časem (např. získání aktuálního času)
 from dotenv import load_dotenv           # Pro načítání proměnných prostředí ze souboru .env
+
+# Nastavení logování, aby výstup v terminálu vypadal profesionálně
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%H:%M:%S'
+)
 
 # --- 1. NAČTENÍ KONFIGURACE Z .ENV SOUBORU ---
 # Tento blok kódu zajistí, že citlivé údaje (jako hesla k e-mailu) nebudou přímo v kódu,
@@ -44,11 +52,9 @@ cesta_k_env = os.path.join(adresar_skriptu, '.env')
 
 if os.path.exists(cesta_k_env):
     load_dotenv(cesta_k_env)
-    # Pro tvou kontrolu (později můžeš tyto dva řádky smazat):
-    print(f"✅ Soubor .env nalezen v: {adresar_skriptu}")
-    print(f"📧 Načtený uživatel: {os.getenv('EMAIL_USER')}")
+    logging.info(f"Soubor .env načten z: {adresar_skriptu}")
 else:
-    print(f"❌ CHYBA: Soubor .env nebyl nalezen v {adresar_skriptu}!")
+    logging.error(f"Soubor .env nebyl nalezen v {adresar_skriptu}!")
 
 # --- HLAVNÍ KONFIGURACE SKRIPTU ---
 # Zde jsou definovány klíčové proměnné, které můžete snadno upravit.
@@ -94,10 +100,10 @@ def posli_email(predmet: str, text: str):
         with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
             server.login(EMAIL_ODESILATEL, EMAIL_HESLO) # Přihlášení k e-mailovému účtu
             server.send_message(msg)                    # Odeslání připravené zprávy
-        print(f"📧 E-mail odeslán: {predmet}")
+        logging.info(f"📧 E-mail odeslán: {predmet}")
     except Exception as e:
         # Pokud nejde ani odeslat mail (třeba nejde internet), vypíšeme to aspoň na obrazovku
-        print(f"❌ Chyba při odesílání e-mailu: {e}")
+        logging.error(f"Chyba při odesílání e-mailu: {e}")
 
 # --- 3. HLAVNÍ FUNKCE MĚŘENÍ ---
 
@@ -113,7 +119,7 @@ def moje_predpoved():
     
     # Cyklus 'while not uspech' se opakuje tak dlouho, dokud se data úspěšně nestáhnou a nezpracují.
     while not uspech:
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Spouštím aktualizaci (Open-Meteo)...")
+        logging.info("Spouštím aktualizaci (Open-Meteo)...")
         
         try:
             # 1. STAŽENÍ DAT: requests.get odešle požadavek na webové API.
@@ -175,7 +181,7 @@ def moje_predpoved():
                 writer_buf = csv.writer(f_buf, delimiter=';')
                 writer_buf.writerow(buffer_data) # Zapíše připravený řádek do bufferu.
 
-            print(f"✅ Data úspěšně uložena.")
+            logging.info("Data úspěšně uložena.")
 
             # Pokud byla předchozí operace chybová (a e-mail o chybě byl odeslán),
             # nyní pošleme e-mail o tom, že se situace napravila.
@@ -196,7 +202,7 @@ def moje_predpoved():
             # únik citlivých URL parametrů nebo API klíčů), zprávu ořízneme, aby se tyto informace
             # nedostaly do e-mailu.
             bezpecna_zprava = zprava_chyby.split('?')[0] if '?' in zprava_chyby else zprava_chyby
-            print(f"⚠️ Chyba: {bezpecna_zprava}")
+            logging.warning(f"Chyba při stahování: {bezpecna_zprava}")
             
             # Pokud je to první chyba v řadě (chyba_oznamena je False), pošleme o tom e-mail.
             if not chyba_oznamena:
@@ -204,7 +210,7 @@ def moje_predpoved():
                 chyba_oznamena = True
             
             # Počkáme 10 minut (600 sekund) a pak se cyklus 'while not uspech' pokusí stáhnout data znovu.
-            print("⏳ Zkusím to znovu za 10 minut...")
+            logging.info("Další pokus za 10 minut...")
             time.sleep(600)
 
 # --- 4. PLÁNOVAČ A HLAVNÍ SMYČKA ---
